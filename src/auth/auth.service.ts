@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { promises } from 'dns';
@@ -35,8 +35,13 @@ export class AuthService {
            data:{
                 email: registerDtor.email,
                 password: hashedPassword,
+                name: registerDtor.name,
                 
             
+           },
+           include:{
+                events: true, 
+                bookings: true, 
            }
         });
         const { password, ...result } = newUser;
@@ -99,6 +104,18 @@ async RefreshToken(refreshToken: string) {
                 throw new ConflictException('Invalid refresh token');
             }
         }
+
+    async getuserBYId(userId: number){
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId.toString() },
+        });
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+
+        const { password, ...result } = user;
+        return result;
+    }
 
     private async hashedPassword(password: string): Promise<string> {
         return bcrypt.hash(password, 10);
