@@ -18,6 +18,7 @@ model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String
+  name      String   
   role      Role     @default(attendee)
   events    Event[]
   bookings  Booking[]

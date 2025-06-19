@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { promises } from 'dns';
@@ -6,6 +6,7 @@ import { AuthResponse } from './interfaces/auth-response.interface';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { Role } from './roles.enum';
 
 
 
@@ -35,8 +36,13 @@ export class AuthService {
            data:{
                 email: registerDtor.email,
                 password: hashedPassword,
+                name: registerDtor.name,
                 
             
+           },
+           include:{
+                events: true, 
+                bookings: true, 
            }
         });
         const { password, ...result } = newUser;
@@ -45,7 +51,42 @@ export class AuthService {
             message: 'User registered successfully',
         }
     }
+   
+    async createUserWithRole(registerDto: RegisterDto, role: Role) {
+ 
+    const userExists = await this.prisma.user.findUnique({
+        where: { email: registerDto.email }
+    });
+    if (userExists) {
+        throw new ConflictException(`User with email ${registerDto.email} already exists`);
+    }
 
+    
+    const hashedPassword = await this.hashedPassword(registerDto.password);
+
+   
+    const newUser = await this.prisma.user.create({
+        data: {
+            email: registerDto.email,
+            password: hashedPassword,
+            name: registerDto.name,
+            role, 
+        },
+        select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+        }
+    });
+
+    return {
+        user: newUser,
+        message: `${role.charAt(0).toUpperCase() + role.slice(1)} created successfully`,
+    };
+}
+    
+  
 
 
 
@@ -71,6 +112,9 @@ export class AuthService {
 
 
    }
+
+
+   
 
 
 
@@ -99,6 +143,18 @@ async RefreshToken(refreshToken: string) {
                 throw new ConflictException('Invalid refresh token');
             }
         }
+
+    async getuserBYId(userId: number){
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId.toString() },
+        });
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+
+        const { password, ...result } = user;
+        return result;
+    }
 
     private async hashedPassword(password: string): Promise<string> {
         return bcrypt.hash(password, 10);
