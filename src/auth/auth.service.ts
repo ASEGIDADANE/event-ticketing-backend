@@ -78,6 +78,44 @@ export class AuthService {
    }
 
 
+   async createAdmin(registerDto:RegisterDto){
+    const userExist = await this.prisma.user.findUnique({
+            where: {
+                email: registerDto.email,
+            },
+        });
+
+        if (userExist) {
+            throw new ConflictException('User with this email already exists');
+        }
+
+        const hashedPassword = await this.hashedPassword(registerDto.password);
+
+
+        const newUser = await this.prisma.user.create({
+           data:{
+                email: registerDto.email,
+                password: hashedPassword,
+                name: registerDto.name,
+                role:'admin'
+            
+           },
+           include:{
+                events: true, 
+                bookings: true, 
+           }
+        });
+        const { password, ...result } = newUser;
+        return {
+            user: result,
+            message: 'User registered successfully',
+        }
+
+
+
+   }
+
+
 
 
 async RefreshToken(refreshToken: string) {
