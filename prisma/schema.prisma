@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(attendee)
+  events    Event[]
+  bookings  Booking[]
+}
+
+enum Role {
+  admin
+  organizer
+  attendee
+}
+
+
+model Venue {
+  id        String   @id @default(uuid())
+  name      String
+  location  String
+  capacity  Int
+  events    Event[]
+}
+
+model Event {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  date        DateTime
+  isPublished Boolean  @default(false)
+  organizer   User     @relation(fields: [organizerId], references: [id])
+  organizerId String
+  venue       Venue    @relation(fields: [venueId], references: [id])
+  venueId     String
+  tickets     TicketType[]
+}
+
+
+model Booking {
+  id           String     @id @default(uuid())
+  quantity     Int
+  status       BookingStatus
+  user         User       @relation(fields: [userId], references: [id])
+  userId       String
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
+  ticketTypeId String
+  payment      Payment?
+}
+
+enum BookingStatus {
+  confirmed
+  cancelled
+}
+
+model TicketType {
+  id             String   @id @default(uuid())
+  name           String
+  price          Float
+  totalAvailable Int
+  maxPerUser     Int
+  event          Event    @relation(fields: [eventId], references: [id])
+  eventId        String
+  bookings       Booking[]
+}
+
+model Payment {
+  id         String   @id @default(uuid())
+  amount     Float
+  method     String
+  status     String
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+  bookingId  String @unique
+}
+
