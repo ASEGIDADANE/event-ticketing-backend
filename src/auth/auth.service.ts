@@ -6,6 +6,7 @@ import { AuthResponse } from './interfaces/auth-response.interface';
 import * as bcrypt from 'bcryptjs';
 import { LoginDto } from './dto/login.dto';
 import { JwtService } from '@nestjs/jwt';
+import { Role } from './roles.enum';
 
 
 
@@ -50,7 +51,42 @@ export class AuthService {
             message: 'User registered successfully',
         }
     }
+   
+    async createUserWithRole(registerDto: RegisterDto, role: Role) {
+ 
+    const userExists = await this.prisma.user.findUnique({
+        where: { email: registerDto.email }
+    });
+    if (userExists) {
+        throw new ConflictException(`User with email ${registerDto.email} already exists`);
+    }
 
+    
+    const hashedPassword = await this.hashedPassword(registerDto.password);
+
+   
+    const newUser = await this.prisma.user.create({
+        data: {
+            email: registerDto.email,
+            password: hashedPassword,
+            name: registerDto.name,
+            role, 
+        },
+        select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+        }
+    });
+
+    return {
+        user: newUser,
+        message: `${role.charAt(0).toUpperCase() + role.slice(1)} created successfully`,
+    };
+}
+    
+  
 
 
 
@@ -78,42 +114,7 @@ export class AuthService {
    }
 
 
-   async createAdmin(registerDto:RegisterDto){
-    const userExist = await this.prisma.user.findUnique({
-            where: {
-                email: registerDto.email,
-            },
-        });
-
-        if (userExist) {
-            throw new ConflictException('User with this email already exists');
-        }
-
-        const hashedPassword = await this.hashedPassword(registerDto.password);
-
-
-        const newUser = await this.prisma.user.create({
-           data:{
-                email: registerDto.email,
-                password: hashedPassword,
-                name: registerDto.name,
-                role:'admin'
-            
-           },
-           include:{
-                events: true, 
-                bookings: true, 
-           }
-        });
-        const { password, ...result } = newUser;
-        return {
-            user: result,
-            message: 'User registered successfully',
-        }
-
-
-
-   }
+   
 
 
 
