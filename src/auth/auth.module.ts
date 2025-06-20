@@ -8,8 +8,8 @@ import { Jwtstrategies } from './strategies/jwt.strategy';
 @Module({
   imports: [
     JwtModule.register({
-      secret: 'yourSecretKey', // Use env variable in production!
-      signOptions: { expiresIn: '1h' },
+      secret: '123456',
+      signOptions: { expiresIn: '1d' },
     }),
     PrismaModule
   ],

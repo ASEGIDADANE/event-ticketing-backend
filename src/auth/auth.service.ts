@@ -90,7 +90,7 @@ export class AuthService {
 
 
 
-   async loginUser(loginDto:LoginDto): Promise<AuthResponse | { user: any; token: string; message: string }> {
+   async loginUser(loginDto:LoginDto): Promise<AuthResponse | { user: any; token: string; message: string ;refreshToken: string }> {
     const userExist = await this.prisma.user.findUnique({
         where:{
             email: loginDto.email,
@@ -107,6 +107,7 @@ export class AuthService {
     return {
         user: result,
         token: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
         message: 'User logged in successfully',
     };
 
@@ -171,9 +172,9 @@ async RefreshToken(refreshToken: string) {
     }
     return this.jwtService.sign(payload, {
         secret:'123456',
-        expiresIn: '1h', // Access token valid for 1 hour
+        expiresIn: '1d',
     });
-
+ 
 
 
 
