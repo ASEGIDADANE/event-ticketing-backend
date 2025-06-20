@@ -9,8 +9,8 @@ export class UsersService {
     return this.prisma.user.findUnique({
       where: { id: userId },
       include: {
-        events: true,   // includes events created by user
-        bookings: true, // includes bookings made by user
+        events: true,   
+        bookings: true, 
       },
     });
   }
