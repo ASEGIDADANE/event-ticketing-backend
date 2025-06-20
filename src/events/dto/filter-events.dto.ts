@@ -19,3 +19,6 @@ export class FilterEventsDto {
   @IsBooleanString({ message: 'isPublished must be a boolean value (true or false).' })
   isPublished?: string; 
 }
+
+
+
