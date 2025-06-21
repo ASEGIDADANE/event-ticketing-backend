@@ -6,9 +6,10 @@ import { UsersModule } from './users/users.module';
 import { VenuesModule } from './venues/venues.module';
 import { EventsModule } from './events/events.module';
 import { TicketsModule } from './tickets/tickets.module';
+import { BookingsModule } from './bookings/bookings.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, VenuesModule, EventsModule, TicketsModule],
+  imports: [AuthModule, UsersModule, VenuesModule, EventsModule, TicketsModule, BookingsModule],
   controllers: [AppController],
   providers: [AppService],
 })
