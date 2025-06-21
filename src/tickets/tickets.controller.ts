@@ -5,13 +5,14 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { RequestWithUser } from 'src/auth/interfaces/request.interface';
+import {Role} from 'src/auth/roles.enum';
 
 @Controller('tickets')
 export class TicketsController {
     constructor(private readonly ticketsService: TicketsService) {}
     @Post('tickets')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    // @Roles('organizer')
+    @Roles(Role.organizer)
     async createTicket(@Body() dto: CreateTicketDto, @Req() req: RequestWithUser) {
         const userId = req.user.id; // Now TypeScript knows this exists
         return this.ticketsService.createTicket(dto, userId);

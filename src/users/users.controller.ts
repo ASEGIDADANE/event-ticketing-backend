@@ -11,7 +11,7 @@ import { currentUser } from 'src/auth/decorators/current-user.decorator';
 export class UsersController {
    constructor(private readonly usersService: UsersService) {}
 
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Get('me')
   getMe(@currentUser() user: User) {
     return this.usersService.getMe(user.id);
