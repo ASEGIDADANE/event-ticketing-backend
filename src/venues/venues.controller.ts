@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Request } from 'express';
+import { Role } from '../auth/roles.enum';
 
 @Controller('venues')
 export class VenuesController {
@@ -13,7 +14,7 @@ export class VenuesController {
 
     @Post()
     @UseGuards(JwtAuthGuard, RolesGuard)
-    // @Roles('organizer')
+    @Roles(Role.organizer)
     async createVenue(
     @Body() createVenueDto: CreateVenueDto,
     @Req() req: Request,

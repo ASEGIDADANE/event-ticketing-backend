@@ -7,6 +7,8 @@ import { FilterEventsDto } from './dto/filter-events.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { RequestWithUser } from 'src/auth/interfaces/request.interface';
+import {  Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/roles.enum';
 
 @Controller('events')
 export class EventsController {
@@ -14,7 +16,7 @@ export class EventsController {
 
     @Post()
     @UseGuards(JwtAuthGuard, RolesGuard)
-//  @Roles('organizer')
+    @Roles(Role.organizer)
     async createEvent(
         @Body() createEventDto: CreateEventDto,
         @Req() req: RequestWithUser,
@@ -37,7 +39,7 @@ export class EventsController {
   
     @Patch(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
-    //   @Roles('organizer')
+      @Roles(Role.organizer)
     async updateEvent(
         @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDto: UpdateEventDto,
@@ -49,7 +51,7 @@ export class EventsController {
   
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-//   @Roles('organizer')
+  @Roles(Role.organizer)
   async deleteEvent(
     @Param('id', ParseUUIDPipe) id: string,
     @Req() req: RequestWithUser,
