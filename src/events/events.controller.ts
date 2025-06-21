@@ -1,11 +1,12 @@
 import { Controller } from '@nestjs/common';
 import { EventsService } from './events.service';
-import { Post, Body, Get, Query, Param, ParseUUIDPipe, Patch, Delete, UseGuards, Request } from '@nestjs/common';
+import { Post, Body, Get, Query, Param, ParseUUIDPipe, Patch, Delete, UseGuards, Req } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { CreateEventDto } from './create-event.dto';
 import { FilterEventsDto } from './dto/filter-events.dto';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { RequestWithUser } from 'src/auth/interfaces/request.interface';
 
 @Controller('events')
 export class EventsController {
@@ -16,7 +17,7 @@ export class EventsController {
 //  @Roles('organizer')
     async createEvent(
         @Body() createEventDto: CreateEventDto,
-        @Request() req,
+        @Req() req: RequestWithUser,
     ) {
         return this.eventsService.createEvent(createEventDto, req.user.id);
     }
@@ -40,7 +41,7 @@ export class EventsController {
     async updateEvent(
         @Param('id', ParseUUIDPipe) id: string,
     @Body() updateDto: UpdateEventDto,
-    @Request() req,
+    @Req() req: RequestWithUser,
     ) {
         return this.eventsService.updateEvent(id, updateDto, req.user.id);
     }
@@ -51,7 +52,7 @@ export class EventsController {
 //   @Roles('organizer')
   async deleteEvent(
     @Param('id', ParseUUIDPipe) id: string,
-    @Request() req,
+    @Req() req: RequestWithUser,
   ) {
     return this.eventsService.deleteEvent(id, req.user.id);
   }
