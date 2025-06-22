@@ -84,7 +84,7 @@ model Payment {
   id         String   @id @default(uuid())
   amount     Float
   method     String
-  status     String
+  status     String  @default("pending")
   booking    Booking  @relation(fields: [bookingId], references: [id])
   bookingId  String @unique
 }
