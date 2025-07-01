@@ -33,6 +33,8 @@ export class EventsService {
     async createEvent(createEventDto: CreateEventDto, userId: string) {
         const { name, description, date, venueId } = createEventDto;
 
+
+
       
         const venue = await this.prisma.venue.findUnique({
         where: { id: venueId },
@@ -41,6 +43,7 @@ export class EventsService {
         if (!venue) {
         throw new NotFoundException('Venue not found');
         }
+
 
        
         const event = await this.prisma.event.create({
@@ -51,6 +54,11 @@ export class EventsService {
             organizerId: userId,
             venueId,
       },
+      
+    });
+    // Invalidate cache for the event list
+    this.eventsCacheKey.forEach(async (key) => {
+      await this.cacheManager.del(key);
     });
 
     return event;
@@ -155,6 +163,15 @@ export class EventsService {
 
 
 async getEventById(id: string) {
+  const cacheKey = `event:${id}`;
+  this.eventsCacheKey.add(cacheKey);
+  const cachedEvent = await this.cacheManager.get<EventEntity>(cacheKey);
+  if (cachedEvent) {
+    console.log('cache hit');
+    return cachedEvent;
+  }
+  console.log('cache miss');
+
   const event = await this.prisma.event.findUnique({
     where: { id },
     include: {
@@ -166,6 +183,8 @@ async getEventById(id: string) {
   if (!event) {
     throw new NotFoundException('Event not found');
   }
+
+  await this.cacheManager.set(cacheKey, event, 60);
 
   return event;
 }
@@ -181,6 +200,12 @@ async updateEvent(id: string, updateDto: UpdateEventDto, userId: string) {
   if (event.organizerId !== userId) {
     throw new ForbiddenException('You can only update your own events');
   }
+// invalidate cache for the specific event
+  await this.cacheManager.del(`event:${id}`); 
+  this.eventsCacheKey.forEach(async (key) => {
+    await this.cacheManager.del(key);
+  });
+
 
   return this.prisma.event.update({
     where: { id },
@@ -199,6 +224,12 @@ async deleteEvent(id: string, userId: string) {
   if (event.organizerId !== userId) {
     throw new ForbiddenException('You can only delete your own events');
   }
+
+  await this.cacheManager.del(`event:${id}`); // Invalidate cache for the specific event
+  this.eventsCacheKey.forEach(async (key) => {
+    await this.cacheManager.del(key);
+  });
+  
 
   return this.prisma.event.delete({
     where: { id },
