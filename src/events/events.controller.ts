@@ -9,6 +9,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { RequestWithUser } from 'src/auth/interfaces/request.interface';
 import {  Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/roles.enum';
+import { FindEventQueryDto } from './dto/find-event-query.dto';
 
 @Controller('events')
 export class EventsController {
@@ -26,8 +27,8 @@ export class EventsController {
 
 
     @Get()
-    async getAllEvents(@Query() filterDto: FilterEventsDto) {
-        return this.eventsService.getAllEvents(filterDto);
+    async getAllEvents(@Query() query:FindEventQueryDto) {
+        return this.eventsService.getAllEvents(query);
     }
 
  
