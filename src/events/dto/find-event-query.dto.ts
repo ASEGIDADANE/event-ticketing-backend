@@ -10,3 +10,5 @@ export class FindEventQueryDto extends paginationQueryDto  {
 
 }
 
+
+
